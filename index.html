@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式 NTC 溫度感知器模擬 (含電路圖)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px; /* 減少 body 邊距 */
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 750px; /* 稍微縮小寬度 */
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 25px; /* 減少容器內邊距 */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px; /* 減少 h1 下方間距 */
+            font-size: 28px; /* 縮小 h1 字體 */
+        }
+
+        p {
+            font-size: 15px; /* 縮小 p 字體 */
+            color: #555;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px; /* 減少 p 下方間距 */
+        }
+
+        /* 互動控制區 */
+        .controls {
+            text-align: center;
+            margin-bottom: 25px; /* 減少 controls 下方間距 */
+        }
+
+        .controls label {
+            font-size: 17px; /* 縮小 label 字體 */
+            font-weight: 600;
+            color: #111;
+        }
+
+        #tempSlider {
+            width: 80%;
+            margin-top: 10px; /* 減少滑桿上方間距 */
+            cursor: pointer;
+        }
+
+        #currentTempLabel {
+            font-size: 22px; /* 縮小溫度標籤字體 */
+            font-weight: bold;
+            color: #007bff;
+            display: block;
+            margin-top: 8px; /* 減少溫度標籤上方間距 */
+        }
+
+        /* 主要模擬區域 */
+        .simulation {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 20px;
+            /* 移除 border-bottom 和 padding-bottom */
+        }
+
+        /* 感知器 */
+        .sensor {
+            flex-basis: 200px;
+            background: #e9ecef;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sensor-icon {
+            font-size: 40px; /* 縮小圖示 */
+        }
+        
+        .sensor h3 {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            font-size: 18px; /* 縮小標題 */
+        }
+
+        .sensor-data {
+            font-size: 16px; /* 縮小字體 */
+            font-weight: 500;
+            color: #495057;
+        }
+
+        #resistanceValue {
+            font-weight: bold;
+            font-size: 20px; /* 縮小字體 */
+            color: #d9534f;
+        }
+
+        /* 電腦 (ECU) */
+        .ecu {
+            flex-basis: 300px;
+            background: #2c3e50;
+            border: 2px solid #233140;
+            border-radius: 8px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .ecu h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px; /* 減少間距 */
+            border-bottom: 1px solid #7f8c8d;
+            padding-bottom: 10px;
+            font-size: 20px; /* 縮小標題 */
+        }
+
+        .display-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* 減少顯示框間距 */
+        }
+
+        .display-box {
+            background: #1a252f;
+            border-radius: 6px;
+            padding: 12px 15px; /* 減少顯示框內邊距 */
+            border: 1px solid #4a637c;
+        }
+
+        .display-box label {
+            font-size: 13px; /* 縮小字體 */
+            color: #bdc3c7;
+            display: block;
+            margin-bottom: 4px; /* 減少間距 */
+            text-transform: uppercase;
+        }
+
+        .display-box .value {
+            font-size: 24px; /* 縮小字體 */
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: right;
+            padding: 4px; /* 減少內邊距 */
+            background-color: #000;
+            border-radius: 4px;
+            color: #2ecc71;
+        }
+        
+        /* 電路圖區塊 */
+        .circuit-diagram {
+            width: 100%;
+            text-align: center;
+            margin-top: 15px; /* 大幅減少電路圖上方間距 */
+        }
+        
+        .circuit-diagram h3 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px; /* 減少間距 */
+            font-size: 18px; /* 縮小標題 */
+        }
+
+        /* SVG 電路圖樣式 */
+        .circuit-svg {
+            width: 100%;
+            max-width: 600px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            overflow: visible; 
+        }
+
+        /* 電路線 */
+        .circuit-line { stroke: #333; stroke-width: 2; fill: none; }
+        #voltage-gradient-path { stroke: url(#voltageGradient); stroke-width: 6; fill: none; }
+        .resistor-body { stroke: #333; stroke-width: 2; fill: none; }
+        .ntc-line { stroke: #555; stroke-width: 2; }
+        .circuit-label { fill: #111; font-weight: bold; }
+        .circuit-sub-label { fill: #555; font-size: 12px; }
+        .vout-tap { stroke: #007bff; stroke-width: 2; fill: none; }
+        .vout-dot { fill: #007bff; }
+        .vout-label { fill: #007bff; font-weight: bold; font-size: 16px; }
+        .gnd-symbol-line { stroke: #333; stroke-width: 2; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>互動式 NTC 溫度感知器模擬</h1>
+        <p>
+            這是一個模擬汽車溫度感知器 (NTC) 的網頁。NTC 是「負溫度係數」的縮寫，代表
+            <strong>溫度越高，電阻值越低</strong>。
+        </p>
+
+        <div class="controls">
+            <label for="tempSlider">拖動滑桿來改變目前溫度：</label>
+            <span id="currentTempLabel">25.0 °C</span>
+            <input type="range" id="tempSlider" min="-20" max="120" value="25" step="0.1">
+        </div>
+
+        <div class="simulation">
+
+            <div class="sensor">
+                <div class="sensor-icon">🌡️</div>
+                <h3>溫度感知器 (NTC)</h3>
+                <div class="sensor-data">
+                    目前電阻值:
+                    <span id="resistanceValue">10000 Ω</span>
+                </div>
+            </div>
+
+            <div class="ecu">
+                <h3>汽車電腦 (ECU)</h3>
+                <div class="display-group">
+                    <div class="display-box">
+                        <label>訊號電壓 (V_out)</label>
+                        <div class="value" id="voltageDisplay">2.50 V</div>
+                    </div>
+                    <div class="display-box">
+                        <label>解讀溫度</label>
+                        <div class="value" id="tempDisplay">25.0 °C</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="circuit-diagram">
+            <h3>ECU 內部簡化電路 (分壓電路)</h3>
+            
+            <svg class="circuit-svg" viewBox="0 0 400 180">
+                <defs>
+                    <linearGradient id="voltageGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop id="grad-stop1" offset="0%" style="stop-color:#d9534f; stop-opacity:1" />
+                        <stop id="grad-stop2" offset="50%" style="stop-color:#f0ad4e; stop-opacity:1" />
+                        <stop id="grad-stop3" offset="100%" style="stop-color:#5bc0de; stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <path id="voltage-gradient-path" d="M 50 50 L 130 50 L 170 50 L 230 50 L 270 50 L 350 50" />
+                
+                <text x="25" y="55" text-anchor="middle" class="circuit-label">5V</text>
+                <text x="25" y="70" text-anchor="middle" class="circuit-sub-label">(電腦參考電壓)</text>
+                <circle cx="50" cy="50" r="4" fill="#d9534f" />
+                <line class="circuit-line" x1="50" y1="50" x2="130" y2="50" />
+                
+                <path class="resistor-body" d="M 130 50 l 5 -10 l 10 20 l 10 -20 l 10 20 l 5 -10" />
+                <text x="150" y="10" text-anchor="middle" class="circuit-label">固定電阻</text>
+                <text x="150" y="25" text-anchor="middle" class="circuit-sub-label">(10kΩ)</text>
+                
+                <line class="circuit-line" x1="170" y1="50" x2="230" y2="50" />
+                <line class="vout-tap" x1="200" y1="50" x2="200" y2="100" />
+                <circle class="vout-dot" cx="200" cy="50" r="4" />
+                <text x="200" y="120" text-anchor="middle" class="vout-label" id="vout-label-text">V_out: 2.50V</text>
+                <text x="200" y="135" text-anchor="middle" class="circuit-sub-label">(ECU 讀取點)</text>
+
+                <path class="resistor-body" d="M 230 50 l 5 -10 l 10 20 l 10 -20 l 10 20 l 5 -10" />
+                <line class="ntc-line" x1="225" y1="70" x2="275" y2="30" />
+                <text x="250" y="10" text-anchor="middle" class="circuit-label">溫度感知器</text>
+                <text x="250" y="25" text-anchor="middle" class="circuit-sub-label">(NTC: <tspan id="ntc-label-resistance">10kΩ</tspan>)</text>
+                <text x="275" y="70" text-anchor="middle" class="circuit-label">t°</text> 
+                
+                <line class="circuit-line" x1="270" y1="50" x2="350" y2="50" />
+                <text x="375" y="55" text-anchor="middle" class="circuit-label">GND</text>
+                <text x="375" y="70" text-anchor="middle" class="circuit-sub-label">(0V)</text>
+                <line class="gnd-symbol-line" x1="350" y1="50" x2="350" y2="70" />
+                <line class="gnd-symbol-line" x1="335" y1="70" x2="365" y2="70" />
+                <line class="gnd-symbol-line" x1="340" y1="75" x2="360" y2="75" />
+                <line class="gnd-symbol-line" x1="345" y1="80" x2="355" y2="80" />
+
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // --- 模擬參數 (可調整) ---
+        const R_FIXED = 10000; // 10,000 Ohms (10kΩ)
+        const V_REF = 5.0; // 5 Volts
+        const R0 = 10000; // 在 T0 時的電阻 (10kΩ)
+        const T0 = 25 + 273.15; // 參考溫度 (25°C)，轉換為凱氏溫度 (K)
+        const B_VALUE = 3950; // NTC 的 B 係數 (典型值)
+
+        // --- 獲取頁面元素 ---
+        const tempSlider = document.getElementById('tempSlider');
+        const currentTempLabel = document.getElementById('currentTempLabel');
+        const resistanceValue = document.getElementById('resistanceValue');
+        const voltageDisplay = document.getElementById('voltageDisplay');
+        const tempDisplay = document.getElementById('tempDisplay');
+        
+        // --- 獲取 SVG 電路圖相關元素 ---
+        const voutLabelText = document.getElementById('vout-label-text');
+        const ntcLabelResistance = document.getElementById('ntc-label-resistance');
+        const gradStop2 = document.getElementById('grad-stop2'); // 漸層的中間點
+
+        // --- 核心更新函式 ---
+        function updateSimulation() {
+            // 1. 獲取當前溫度 (攝氏 °C)
+            let currentTempC = parseFloat(tempSlider.value);
+            
+            // 2. 將溫度轉換為凱氏 (K)
+            let currentTempK = currentTempC + 273.15;
+
+            // 3. 計算 NTC 電阻值 (R_sensor)
+            let rSensor = R0 * Math.exp(B_VALUE * (1 / currentTempK - 1 / T0));
+
+            // 4. 計算分壓電路的輸出電壓 (V_out)
+            let vOut = V_REF * (rSensor / (R_FIXED + rSensor));
+
+            // 5. 更新網頁上的顯示內容
+            
+            // 更新滑桿標籤
+            currentTempLabel.textContent = currentTempC.toFixed(1) + ' °C';
+
+            // 更新感知器電阻
+            resistanceValue.textContent = rSensor.toFixed(0) + ' Ω';
+            
+            // 更新 ECU 顯示框
+            voltageDisplay.textContent = vOut.toFixed(2) + ' V';
+            tempDisplay.textContent = currentTempC.toFixed(1) + ' °C';
+
+            // 6. --- 更新 SVG 電路圖 ---
+            
+            // 更新 V_out 標籤的電壓文字
+            voutLabelText.textContent = 'V_out: ' + vOut.toFixed(2) + 'V';
+            
+            // 更新 NTC 電阻標籤的電阻值
+            if (rSensor >= 1000) {
+                ntcLabelResistance.textContent = (rSensor / 1000).toFixed(1) + 'kΩ';
+            } else {
+                ntcLabelResistance.textContent = rSensor.toFixed(0) + 'Ω';
+            }
+            
+            // 動態更新漸層！
+            let vOutPercentageOfTotalVoltage = vOut / V_REF;
+            let offsetPercentage = (1 - vOutPercentageOfTotalVoltage) * 100;
+            gradStop2.setAttribute('offset', offsetPercentage + '%');
+        }
+
+        // --- 事件監聽 ---
+        tempSlider.addEventListener('input', updateSimulation);
+
+        // --- 頁面載入時，先執行一次 ---
+        updateSimulation();
+
+    </script>
+</body>
+</html>
